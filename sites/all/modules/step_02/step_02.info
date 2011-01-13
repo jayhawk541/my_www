@@ -1,0 +1,6 @@
+; $Id$
+name = step_02
+description = andet forsøg.
+core = 6.x
+
+package = "jayhawks"

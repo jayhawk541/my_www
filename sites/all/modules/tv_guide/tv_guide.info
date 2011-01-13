@@ -1,0 +1,7 @@
+; $Id$
+name = tv guide
+description = tv guides from epgdata.dk
+core = 6.x
+
+package = "jayhawks"
+version = "6.x-1.0"

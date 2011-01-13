@@ -1,0 +1,5 @@
+*.class
+*.pyc
+*.pyo
+sites/default/default.settings.php
+sites/default/settings.php

@@ -1,0 +1,76 @@
+<?php
+// $Id$
+
+function nyheds_guide_menu() {
+	$items = array();
+	$items["nyheder"] = array(
+		'title' => 'Nyheder',
+		'page callback' => '_nyheds_guide_output',
+		'page arguments' => array("0"),
+		'access callback' => TRUE,
+		'menu_name' => "menu-info-browser",
+	);
+	$items["nyheder/dr"] = array(
+		'title' => 'DR',
+		'page callback' => '_nyheds_guide_output',
+		'page arguments' => array("0"),
+		'access callback' => TRUE,
+	);
+	$items["nyheder/dr/alle"] = array(
+		'title' => 'Alle',
+		'page callback' => '_nyheds_guide_output',
+		'page arguments' => array("http://www.dr.dk/Nyheder/Service/feeds/Allenyheder.htm"),
+		'access callback' => TRUE,
+	);
+	$items["nyheder/dr/indland"] = array(
+		'title' => 'Indland',
+		'page callback' => '_nyheds_guide_output',
+		'page arguments' => array("http://www.dr.dk/nyheder/service/feeds/indland"),
+		'access callback' => TRUE,
+	);
+	$items["nyheder/dr/udland"] = array(
+		'title' => 'Udland',
+		'page callback' => '_nyheds_guide_output',
+		'page arguments' => array("http://www.dr.dk/nyheder/service/feeds/udland"),
+		'access callback' => TRUE,
+	);
+	$items["nyheder/dr/politik"] = array(
+		'title' => 'Politik',
+		'page callback' => '_nyheds_guide_output',
+		'page arguments' => array("http://www.dr.dk/nyheder/service/feeds/politik"),
+		'access callback' => TRUE,
+	);
+	$items["nyheder/dr/kultur"] = array(
+		'title' => 'Kultur',
+		'page callback' => '_nyheds_guide_output',
+		'page arguments' => array("http://www.dr.dk/nyheder/service/feeds/kultur"),
+		'access callback' => TRUE,
+	);
+	return $items;
+}
+
+function _nyheds_guide_output($content = NULL) {
+	if($content == '0') {
+		$output = 'Vælg medie i menuen til højre';
+	} else {
+		$output = _nyheds_guide_gen_output($content);
+	}
+	return $output;
+}
+
+function _nyheds_guide_gen_output($content) {
+	$xmldata = file_get_contents($content);
+	$xmldata = utf8_encode($xmldata);
+	$xmldata = str_replace("\n", " ", $xmldata);
+	$xmldata = str_replace("\r", " ", $xmldata);
+	$xmldata = str_ireplace("![CDATA[", "", $xmldata);
+	$xmldata = str_replace("]]", "", $xmldata);
+	$expr = "/<item><title><(.*)><\/title><description><(.*)>.*<link>(.*)</Ui";
+	preg_match_all($expr, $xmldata, $arr);
+	$result = '';
+	$s = sizeof($arr[1]);
+	for($i=0; $i<$s; $i++) {
+		$result .= '<br><h3><a href="' . $arr[3][$i] . '">' . $arr[1][$i] . '</a></h3><p>' . $arr[2][$i] . '</p>';
+	}
+	return $result;
+}

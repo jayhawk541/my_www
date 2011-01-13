@@ -1,0 +1,7 @@
+; $Id$
+name = nyheds guide
+description = nyheds feeds
+core = 6.x
+
+package = "jayhawks"
+version = "6.x-1.0"

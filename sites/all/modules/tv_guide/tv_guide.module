@@ -1,0 +1,104 @@
+<?php
+// $Id$
+
+function genParentItem(&$items, $url, $title) {
+	$items[$url] = array(
+		'title' => $title,
+		'page callback' => '_tv_guide_output',
+		'page arguments' => array('0'),
+		'access callback' => TRUE,
+		'menu_name' => "menu-info-browser",
+	);
+}
+
+function genChildItem(&$items, $id, $name, $country) {
+	$pname = str_replace(" ", "_", $name);
+	$pname = str_replace("'", "", $pname);
+	$pname = str_replace("+", "_plus", $pname);
+	if($country == 'DK') {
+		if(substr($name, 0, 2) == 'DR') {
+			$country .= '/dr';
+		} else {
+			if(substr($name, 0, 3) == 'TV2') {
+				$country .= '/tv2';
+			} else {
+				if(substr($name, 0, 3) == 'TV3' || substr($name, 0, 3) == 'Via') {
+					$country .= '/viasat';
+				} else {
+					$country .= '/andre';
+				}
+			}
+		}
+	}
+	$items["tv/{$country}/{$pname}"] = array(
+		'title' => $name,
+		'page callback' => '_tv_guide_output',
+		'page arguments' => array("{$id}"),
+		'access callback' => TRUE,
+	);
+}
+
+function tv_guide_menu() {
+	$items = array();
+	genParentItem($items, 'tv', 'TV Programmer');
+	genParentItem($items, 'tv/DK', 'Danske');
+	genParentItem($items, 'tv/DK/dr', 'DR');
+	genParentItem($items, 'tv/DK/tv2', 'TV2');
+	genParentItem($items, 'tv/DK/viasat', 'Viasat');
+	genParentItem($items, 'tv/DK/andre', 'Øvrige');
+	genParentItem($items, 'tv/EN', 'Engelske');
+	genParentItem($items, 'tv/NO', 'Norske');
+	genParentItem($items, 'tv/SE', 'Svenske');
+	genParentItem($items, 'tv/DE', 'Tyske');
+
+	mysql_connect();
+	mysql_select_db('epgdata');
+	$query = "select id, name, country from channels order by id";
+	$ds = mysql_query($query);
+	while($row = mysql_fetch_row($ds)) {
+		genChildItem($items, $row[0], $row[1], $row[2]);
+	}
+	return $items;
+}
+
+function _tv_guide_output($content = NULL) {
+	if($content == '0') {
+		$output = genInfo();
+	} else {
+		$output = genContent($content);
+	}
+	return $output;
+}
+
+function genContent($delta) {
+	$from = time();
+	$to = $from + (60*60*24);
+	mysql_connect();
+	mysql_select_db('epgdata');
+	$query = "select starttime, title, subtitle, description from programs where channelid = {$delta} "
+			."and endtime > {$from} and endtime < {$to} order by starttime";
+	$ds = mysql_query($query);
+	$content = '<table border=2>';
+	while($row = mysql_fetch_row($ds)) {
+		$time = "<td width=42><b>" . date('H:i', $row[0]) . "</b></td>";
+		if(strlen($row[2])) {
+			$title = "<td><b>{$row[1]} :: </b><i>{$row[2]}</i></td>";
+		} else {
+			$title = "<td><b>{$row[1]}</b></td>";
+		}
+		if(strlen($row[3])) {
+			$more = "<td width=42 title=\"{$row[3]}\"><b>mere</b></td>";
+		} else {
+			$more = "<td width=42></td>";
+		}
+		$content .= "<tr>{$time}{$title}{$more}</tr>";
+	}
+	$content .= '</table>';
+	mysql_close();
+	return $content;
+}
+
+function genInfo() {
+	return "Vælg TV program i menuen til højre";
+}
+

@@ -1,0 +1,35 @@
+<?php
+// $Id$
+
+function step_01_help($path, $arg) {
+	$output = '';
+	switch ($path) {
+		case "admin/help#step_01":
+			$text = 'Mit første modul. Ikke særlig funktionelt, men lærerigt for mig.'
+					.'<br>Det viser teksten "Hello, World".';
+			$output = '<p>' . t($text) . '</p>';
+			break;
+	}
+	return $output;
+}
+
+function step_01_perm() {
+	return array('access step_01 content');
+}
+
+function step_01_block($op='list', $delta=0) {
+	$block = array();
+
+	if ($op == "list") {
+		$block[0]["info"] = t('Step 1, block 0 (eneste block)');
+	} else if ($op == 'view') {
+		$block['subject'] = '<h2>Step 1</h2>';
+		$block['content'] = 'Hello, World';    
+	}
+	return $block;
+}
+
+function step_01_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+	$node->body = 'daw daw';
+}
+
